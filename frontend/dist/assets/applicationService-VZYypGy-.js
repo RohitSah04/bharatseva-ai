@@ -1,0 +1,1 @@
+import{n as a,o as t}from"./index-B3kpUOMo.js";const n={getApplications:(p={})=>a.get("/applications",{params:p}).then(t),createApplication:p=>a.post("/applications",{scheme_id:p}).then(t),updateApplication:(p,i)=>a.patch(`/applications/${p}`,i).then(t)};export{n as a};
