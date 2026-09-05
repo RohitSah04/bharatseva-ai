@@ -7,8 +7,32 @@
     <meta name="description" content="BharatSeva AI — India's Agentic AI Citizen Intelligence Platform. Discover government schemes, subsidies, and welfare programs powered by IBM watsonx.ai." />
     <meta name="theme-color" content="#2563eb" />
     <title>BharatSeva AI — Your Government Scheme Copilot</title>
+    <!--
+      Theme init: runs synchronously before React mounts.
+      Reads persisted theme from localStorage and applies the 'dark' class
+      to <html> immediately — no flash, no hydration mismatch.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('bharatseva_ui');
+          var theme = 'system';
+          if (stored) {
+            var parsed = JSON.parse(stored);
+            theme = (parsed && parsed.state && parsed.state.theme) || 'system';
+          }
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = theme === 'dark' || (theme === 'system' && prefersDark);
+          document.documentElement.classList.toggle('dark', isDark);
+          document.documentElement.classList.toggle('light', !isDark);
+        } catch (e) {
+          // localStorage unavailable or JSON malformed — leave default (light)
+        }
+      })();
+    </script>
   </head>
   <body>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

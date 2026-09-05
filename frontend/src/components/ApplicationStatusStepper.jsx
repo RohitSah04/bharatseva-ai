@@ -1,12 +1,11 @@
 import { CheckCircle, Circle, Clock, XCircle } from 'lucide-react'
-import clsx from 'clsx'
 
 const STATUS_CONFIG = {
-  NOT_STARTED: { label: 'Not Started', icon: Circle, color: 'text-gray-400', ring: 'ring-gray-200', bg: 'bg-gray-50' },
-  IN_PROGRESS: { label: 'In Progress', icon: Clock, color: 'text-blue-600', ring: 'ring-blue-200', bg: 'bg-blue-50' },
-  SUBMITTED: { label: 'Submitted', icon: Clock, color: 'text-amber-600', ring: 'ring-amber-200', bg: 'bg-amber-50' },
-  APPROVED: { label: 'Approved', icon: CheckCircle, color: 'text-emerald-600', ring: 'ring-emerald-200', bg: 'bg-emerald-50' },
-  REJECTED: { label: 'Rejected', icon: XCircle, color: 'text-red-600', ring: 'ring-red-200', bg: 'bg-red-50' },
+  NOT_STARTED: { label: 'Not Started', icon: Circle,      color: 'rgb(var(--ds-ink-s))',   bg: 'transparent',              ring: 'rgb(var(--ds-hl))',           badge: 'badge-indigo'  },
+  IN_PROGRESS: { label: 'In Progress', icon: Clock,       color: 'rgb(var(--ds-accent))',  bg: 'rgba(94,106,210,0.08)',     ring: 'rgba(94,106,210,0.30)',       badge: 'badge-indigo'  },
+  SUBMITTED:   { label: 'Submitted',   icon: Clock,       color: '#fbbf24',                bg: 'rgba(217,119,6,0.08)',      ring: 'rgba(217,119,6,0.30)',        badge: 'badge-amber'   },
+  APPROVED:    { label: 'Approved',    icon: CheckCircle, color: '#27a644',                bg: 'rgba(39,166,68,0.08)',      ring: 'rgba(39,166,68,0.30)',        badge: 'badge-emerald' },
+  REJECTED:    { label: 'Rejected',    icon: XCircle,     color: '#f87171',                bg: 'rgba(239,68,68,0.08)',      ring: 'rgba(239,68,68,0.30)',        badge: 'badge-red'     },
 }
 
 const ORDER = ['NOT_STARTED', 'IN_PROGRESS', 'SUBMITTED', 'APPROVED']
@@ -28,41 +27,35 @@ export function ApplicationStatusStepper({ status = 'NOT_STARTED', className = '
             <li key={step} className="flex items-center flex-1 last:flex-none">
               <div className="flex flex-col items-center">
                 <div
-                  className={clsx(
-                    'w-8 h-8 rounded-full flex items-center justify-center ring-2 transition-all',
-                    isDone && 'bg-emerald-600 ring-emerald-600',
-                    isCurrent && `${cfg.bg} ${cfg.ring}`,
-                    !isDone && !isCurrent && 'bg-gray-50 ring-gray-200',
-                  )}
+                  className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                  style={{
+                    background: isDone ? '#27a644' : isCurrent ? cfg.bg : 'rgb(var(--ds-s2))',
+                    boxShadow: `0 0 0 2px ${isDone ? '#27a644' : isCurrent ? cfg.ring : 'rgb(var(--ds-hl))'}`,
+                  }}
                   aria-current={isCurrent ? 'step' : undefined}
                 >
                   <Icon
-                    className={clsx(
-                      'w-4 h-4',
-                      isDone && 'text-white',
-                      isCurrent && cfg.color,
-                      !isDone && !isCurrent && 'text-gray-300',
-                    )}
+                    className="w-4 h-4"
+                    style={{
+                      color: isDone ? '#fff' : isCurrent ? cfg.color : 'rgb(var(--ds-ink-3))',
+                    }}
                     aria-hidden="true"
                   />
                 </div>
                 <span
-                  className={clsx(
-                    'text-xs mt-1 text-center whitespace-nowrap',
-                    isCurrent && 'font-semibold text-gray-800',
-                    isDone && 'text-gray-500',
-                    !isDone && !isCurrent && 'text-gray-400',
-                  )}
+                  className="text-xs mt-1 text-center whitespace-nowrap"
+                  style={{
+                    fontWeight: isCurrent ? 600 : 400,
+                    color: isCurrent ? 'rgb(var(--ds-ink))' : isDone ? 'rgb(var(--ds-ink-m))' : 'rgb(var(--ds-ink-s))',
+                  }}
                 >
                   {cfg.label}
                 </span>
               </div>
               {!isLast && (
                 <div
-                  className={clsx(
-                    'flex-1 h-px mx-1 mb-5',
-                    idx < currentIdx ? 'bg-emerald-400' : 'bg-gray-200',
-                  )}
+                  className="flex-1 mx-1 mb-5"
+                  style={{ height: 1, background: idx < currentIdx ? '#27a644' : 'rgb(var(--ds-hl))' }}
                   aria-hidden="true"
                 />
               )}
@@ -78,7 +71,7 @@ export function StatusBadge({ status }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.NOT_STARTED
   const Icon = cfg.icon
   return (
-    <span className={clsx('badge', cfg.bg, cfg.color, 'border', cfg.ring)}>
+    <span className={`badge ${cfg.badge}`}>
       <Icon className="w-3 h-3" aria-hidden="true" />
       {cfg.label}
     </span>

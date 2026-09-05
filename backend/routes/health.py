@@ -60,8 +60,21 @@ def readiness():
             "detail": "WATSONX_API_KEY not configured — AI calls will use mock responses",
         }
 
-    # ── Vector store check (Phase 1: always ok — ChromaDB not yet wired) ────
-    checks["vector_store"] = {"status": "ok", "latency_ms": 0, "detail": "Phase 1 — not yet active"}
+    # ── Vector store check — real directory inspection ────────────────────
+    chroma_dir = current_app.config.get("CHROMA_PERSIST_DIR", "./data/chroma")
+    if not os.path.isdir(chroma_dir):
+        checks["vector_store"] = {
+            "status": "not_initialised",
+            "detail": f"ChromaDB persist dir not found: {chroma_dir}",
+        }
+    else:
+        entries = [e for e in os.listdir(chroma_dir) if not e.startswith(".")]
+        checks["vector_store"] = {
+            "status": "active" if entries else "empty",
+            "persist_dir": chroma_dir,
+            "collections": len(entries),
+        }
+
 
     if not db_ok:
         from flask import make_response, jsonify

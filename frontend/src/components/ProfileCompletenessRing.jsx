@@ -17,7 +17,7 @@ export function ProfileCompletenessRing({ percentage, size = 80, className = '' 
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#e5e7eb"
+          stroke="rgb(var(--ds-hl))"
           strokeWidth={8}
         />
         <circle
@@ -34,7 +34,7 @@ export function ProfileCompletenessRing({ percentage, size = 80, className = '' 
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-xs font-bold text-gray-800">{percentage}%</span>
+        <span className="text-xs font-bold" style={{ color: 'rgb(var(--ds-ink))' }}>{percentage}%</span>
       </div>
     </div>
   )

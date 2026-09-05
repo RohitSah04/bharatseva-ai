@@ -41,6 +41,7 @@ class AgentLog(db.Model):
             "input": json.loads(self.input_json or "{}"),
             "output": json.loads(self.output_json or "{}"),
             "confidence": self.confidence,
+            "confidence_score": self.confidence,   # alias for frontend compatibility
             "latency_ms": self.latency_ms,
             "fallback_used": bool(self.fallback_used),
             "fallback_reason": self.fallback_reason,

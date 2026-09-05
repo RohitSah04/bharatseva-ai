@@ -50,31 +50,47 @@ apiClient.interceptors.response.use(
       const refreshToken = useAuthStore.getState().refreshToken
 
       if (!refreshToken) {
+        // Drain queue immediately — no refresh possible
+        const queuedRequests = refreshQueue
+        refreshQueue = []
+        isRefreshing = false
+        queuedRequests.forEach(({ reject }) => reject(error))
         useAuthStore.getState().logout()
         return Promise.reject(error)
       }
+
+      let newAccessToken = null
+      let refreshError = null
 
       try {
         // Use a fresh axios instance (not apiClient) to avoid interceptor loop
         const response = await axios.post(`${BASE_URL}/api/v1/auth/refresh`, {
           refresh_token: refreshToken,
         })
-        const { access_token } = response.data.data
-        useAuthStore.getState().setAccessToken(access_token)
-
-        refreshQueue.forEach(({ resolve }) => resolve(access_token))
-        refreshQueue = []
-
-        originalRequest.headers.Authorization = `Bearer ${access_token}`
-        return apiClient(originalRequest)
-      } catch (refreshError) {
-        refreshQueue.forEach(({ reject }) => reject(refreshError))
-        refreshQueue = []
+        newAccessToken = response.data.data.access_token
+        useAuthStore.getState().setAccessToken(newAccessToken)
+      } catch (err) {
+        refreshError = err
         useAuthStore.getState().logout()
-        return Promise.reject(refreshError)
       } finally {
+        // Always drain the queue — resolved or rejected — regardless of outcome
+        const queuedRequests = refreshQueue
+        refreshQueue = []
         isRefreshing = false
+
+        if (newAccessToken) {
+          queuedRequests.forEach(({ resolve }) => resolve(newAccessToken))
+        } else {
+          queuedRequests.forEach(({ reject }) => reject(refreshError ?? error))
+        }
       }
+
+      if (refreshError) {
+        return Promise.reject(refreshError)
+      }
+
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+      return apiClient(originalRequest)
     }
 
     return Promise.reject(error)

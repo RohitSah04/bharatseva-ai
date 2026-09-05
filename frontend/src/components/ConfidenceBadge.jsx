@@ -1,9 +1,7 @@
-import clsx from 'clsx'
-
 const CONFIDENCE_LEVELS = [
-  { min: 0.8, label: 'High', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-  { min: 0.5, label: 'Medium', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-  { min: 0,   label: 'Low',    color: 'bg-red-100 text-red-700 border-red-200' },
+  { min: 0.8, label: 'High', badge: 'badge-emerald', bar: '#27a644' },
+  { min: 0.5, label: 'Medium', badge: 'badge-amber', bar: '#fbbf24' },
+  { min: 0,   label: 'Low',    badge: 'badge-red',    bar: '#f87171' },
 ]
 
 function getLevel(score) {
@@ -17,11 +15,7 @@ export function ConfidenceBadge({ score, showPercent = true, className = '' }) {
 
   return (
     <span
-      className={clsx(
-        'badge border text-xs font-semibold',
-        level.color,
-        className,
-      )}
+      className={`badge ${level.badge} ${className}`}
       aria-label={`Confidence: ${pct}% (${level.label})`}
       title={`AI Confidence: ${pct}%`}
     >
@@ -34,14 +28,13 @@ export function ConfidenceBar({ score, className = '' }) {
   if (score == null) return null
   const pct = Math.round(score * 100)
   const level = getLevel(score)
-  const barColor = score >= 0.8 ? 'bg-emerald-500' : score >= 0.5 ? 'bg-yellow-500' : 'bg-red-500'
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+      <div className="progress-track flex-1">
         <div
-          className={`h-full rounded-full transition-all duration-500 ${barColor}`}
-          style={{ width: `${pct}%` }}
+          className="progress-fill"
+          style={{ width: `${pct}%`, background: level.bar }}
           role="progressbar"
           aria-valuenow={pct}
           aria-valuemin={0}
@@ -49,7 +42,7 @@ export function ConfidenceBar({ score, className = '' }) {
           aria-label={`Confidence score: ${pct}%`}
         />
       </div>
-      <span className="text-xs font-medium text-gray-600 w-8 text-right">{pct}%</span>
+      <span className="text-xs font-medium w-8 text-right" style={{ color: 'rgb(var(--ds-ink-m))' }}>{pct}%</span>
     </div>
   )
 }

@@ -15,8 +15,11 @@ Also called automatically by create_app() when DB is empty.
 from __future__ import annotations
 
 import json
+import logging
 import uuid
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 
 import bcrypt
 
@@ -901,7 +904,7 @@ def seed_users(bcrypt_cost: int = 12) -> None:
         admin = User(id=_uuid(), email="admin@bharatseva.ai", password_hash=pw, role="admin")
         db.session.add(admin)
         db.session.flush()
-        print(f"  ✓ Admin user created: admin@bharatseva.ai / Admin@12345")
+        logger.info("Seed: admin user created: admin@bharatseva.ai")
 
     # Demo citizen — Ramesh
     if not User.query.filter_by(email="ramesh@demo.ai").first():
@@ -917,7 +920,7 @@ def seed_users(bcrypt_cost: int = 12) -> None:
         )
         p.refresh_completeness()
         db.session.add(p)
-        print(f"  ✓ Demo citizen: ramesh@demo.ai / Citizen@123")
+        logger.info("Seed: demo citizen created: ramesh@demo.ai")
 
     # Demo citizen — Priya
     if not User.query.filter_by(email="priya@demo.ai").first():
@@ -933,7 +936,7 @@ def seed_users(bcrypt_cost: int = 12) -> None:
         )
         p.refresh_completeness()
         db.session.add(p)
-        print(f"  ✓ Demo citizen: priya@demo.ai / Citizen@123")
+        logger.info("Seed: demo citizen created: priya@demo.ai")
 
     db.session.commit()
 
@@ -955,7 +958,7 @@ def seed_schemes() -> None:
             db.session.add(scheme)
             added += 1
     db.session.commit()
-    print(f"  ✓ {added} schemes seeded ({Scheme.query.count()} total)")
+    logger.info("Seed: %d schemes seeded (%d total)", added, Scheme.query.count())
 
 
 def seed_feature_flags() -> None:
@@ -974,7 +977,7 @@ def seed_feature_flags() -> None:
             )
             db.session.add(flag)
     db.session.commit()
-    print(f"  ✓ Feature flags seeded")
+    logger.info("Seed: feature flags seeded")
 
 
 def seed_kb_sources() -> None:
@@ -994,16 +997,16 @@ def seed_kb_sources() -> None:
             )
             db.session.add(kb)
     db.session.commit()
-    print(f"  ✓ KB sources seeded")
+    logger.info("Seed: KB sources seeded")
 
 
 def run() -> None:
-    print("\n🌱 Running seed_data...")
+    logger.info("Running seed_data...")
     seed_users()
     seed_schemes()
     seed_feature_flags()
     seed_kb_sources()
-    print("✅ Seed complete.\n")
+    logger.info("Seed complete.")
 
 
 if __name__ == "__main__":

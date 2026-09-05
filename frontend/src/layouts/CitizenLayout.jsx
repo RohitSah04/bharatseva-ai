@@ -3,29 +3,22 @@ import { Outlet } from 'react-router-dom'
 import { Sidebar } from '@/components/Sidebar'
 import { Navbar } from '@/components/Navbar'
 import { BottomNavigation } from '@/components/BottomNavigation'
+import { ToastContainer } from '@/components/Toast'
 import { useUIStore } from '@/store/uiStore'
 import clsx from 'clsx'
 
 export function CitizenLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { highContrast, largeText } = useUIStore()
+  const { highContrast } = useUIStore()
 
   return (
     <div
       className={clsx(
-        'min-h-screen flex',
+        'min-h-screen flex transition-colors',
         highContrast && 'high-contrast',
-        largeText && 'large-text',
       )}
+      style={{ background: 'rgb(var(--ds-canvas))' }}
     >
-      {/*
-        Single Sidebar instance.
-        - On mobile: controlled by sidebarOpen state (slides in/out via translate-x).
-        - On desktop (md+): the aside inside Sidebar has md:static + md:translate-x-0,
-          so it is always visible and participates in the flex layout.
-        Two instances were previously rendered; the second "mobile" one was also
-        becoming visible on desktop via md:static, causing the duplicate.
-      */}
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main content */}
@@ -33,7 +26,8 @@ export function CitizenLayout() {
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
 
         <main
-          className="flex-1 overflow-y-auto bg-gray-50 pb-16 md:pb-0"
+          className="flex-1 overflow-y-auto pb-16 md:pb-0 transition-colors"
+          style={{ background: 'rgb(var(--ds-canvas))' }}
           id="main-content"
           tabIndex={-1}
           aria-label="Main content"
@@ -44,6 +38,9 @@ export function CitizenLayout() {
 
       {/* Mobile bottom nav */}
       <BottomNavigation />
+
+      {/* Global toast notifications */}
+      <ToastContainer />
     </div>
   )
 }

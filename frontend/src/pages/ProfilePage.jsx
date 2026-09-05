@@ -134,7 +134,7 @@ export default function ProfilePage() {
         <ProfileCompletenessRing percentage={completeness} size={72} />
         <div>
           <h1 className="page-title">Citizen Profile</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm mt-1" style={{ color: 'rgb(var(--ds-ink-s))' }}>
             Your profile drives personalized scheme recommendations and eligibility checks.
           </p>
           {completeness < 80 && (

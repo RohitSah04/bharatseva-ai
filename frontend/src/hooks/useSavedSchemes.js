@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { savedSchemeService } from '@/services/savedSchemeService'
 import { useAuthStore } from '@/store/authStore'
+import { useSavedSchemeStore } from '@/store/savedSchemeStore'
 
 export function useSavedSchemes() {
-  const [savedSchemes, setSavedSchemes] = useState([])
-  const [savedIds, setSavedIds] = useState(new Set())
-  const [loading, setLoading] = useState(false)
+  const {
+    savedSchemes, savedIds, loading,
+    setSavedSchemes, addSavedScheme, removeSavedScheme, setLoading,
+  } = useSavedSchemeStore()
   const { isAuthenticated } = useAuthStore()
 
   const fetchSaved = useCallback(async () => {
@@ -13,42 +15,63 @@ export function useSavedSchemes() {
     setLoading(true)
     try {
       const res = await savedSchemeService.getSavedSchemes()
-      const schemes = res.data.saved_schemes || []
-      setSavedSchemes(schemes)
-      setSavedIds(new Set(schemes.map((s) => s.scheme_id)))
-    } catch {} finally {
+      setSavedSchemes(res.data.saved_schemes || [])
+    } catch {
+      // network errors are non-fatal — keep current state
+    } finally {
       setLoading(false)
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, setLoading, setSavedSchemes])
 
   useEffect(() => { fetchSaved() }, [fetchSaved])
 
-  const saveScheme = useCallback(async (schemeId) => {
+  const saveScheme = useCallback(async (schemeId, schemeName = '') => {
+    // Snapshot before optimistic update so we can revert fully
+    const prevSchemes = useSavedSchemeStore.getState().savedSchemes
+    const prevIds = useSavedSchemeStore.getState().savedIds
+
+    addSavedScheme(schemeId, schemeName)
+
     try {
       await savedSchemeService.saveScheme(schemeId)
-      setSavedIds((prev) => new Set([...prev, schemeId]))
+      // Sync full details from server (fills in proper scheme_name if placeholder was used)
       await fetchSaved()
     } catch (err) {
       const code = err.response?.status
-      if (code === 409) return // Already saved
+      if (code === 409) {
+        // Already saved on server — just sync to be safe
+        await fetchSaved()
+        return
+      }
+      // Real error — revert to snapshot
+      setSavedSchemes(prevSchemes)
       throw err
     }
-  }, [fetchSaved])
+  }, [fetchSaved, addSavedScheme, setSavedSchemes])
 
   const removeScheme = useCallback(async (schemeId) => {
+    // Snapshot before optimistic removal
+    const prevSchemes = useSavedSchemeStore.getState().savedSchemes
+
+    removeSavedScheme(schemeId) // optimistic
+
     try {
       await savedSchemeService.removeSavedScheme(schemeId)
-      setSavedIds((prev) => { const s = new Set(prev); s.delete(schemeId); return s })
       await fetchSaved()
-    } catch (err) { throw err }
-  }, [fetchSaved])
+    } catch (err) {
+      // Revert to full snapshot (restores both savedSchemes and savedIds)
+      setSavedSchemes(prevSchemes)
+      throw err
+    }
+  }, [fetchSaved, removeSavedScheme, setSavedSchemes])
 
   const isSaved = useCallback((schemeId) => savedIds.has(schemeId), [savedIds])
-  const toggleSave = useCallback(async (schemeId) => {
+
+  const toggleSave = useCallback(async (schemeId, schemeName = '') => {
     if (isSaved(schemeId)) {
       await removeScheme(schemeId)
     } else {
-      await saveScheme(schemeId)
+      await saveScheme(schemeId, schemeName)
     }
   }, [isSaved, saveScheme, removeScheme])
 

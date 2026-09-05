@@ -126,16 +126,17 @@ export default function OnboardingPage() {
   const progressPct = ((step + 1) / STEPS.length) * 100
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: 'rgb(var(--ds-canvas))' }}>
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center" aria-hidden="true">
-            <Zap className="w-5 h-5 text-white" />
-          </div>
-          <p className="text-sm font-bold text-gray-900">BharatSeva AI</p>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect width="24" height="24" rx="6" fill="#5e6ad2" />
+            <path d="M7 7h5a3 3 0 0 1 0 6H7V7zm0 6h5.5a3.5 3.5 0 0 1 0 4H7v-4z" fill="white" opacity="0.9" />
+          </svg>
+          <p className="text-sm font-bold" style={{ color: 'rgb(var(--ds-ink))' }}>BharatSeva AI</p>
         </div>
-        <button onClick={skip} className="text-sm text-gray-500 hover:text-gray-700">
+        <button onClick={skip} className="text-sm transition-colors" style={{ color: 'rgb(var(--ds-ink-s))' }}>
           Skip for now
         </button>
       </header>
@@ -144,19 +145,19 @@ export default function OnboardingPage() {
         <div className="w-full max-w-lg">
           {/* Progress */}
           <div className="mb-6">
-            <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+            <div className="flex items-center justify-between text-xs mb-2" style={{ color: 'rgb(var(--ds-ink-s))' }}>
               <span>Step {step + 1} of {STEPS.length}</span>
               <span>{Math.round(progressPct)}% complete</span>
             </div>
             <div
-              className="h-1.5 bg-gray-200 rounded-full overflow-hidden"
+              className="progress-track"
               role="progressbar"
               aria-valuenow={Math.round(progressPct)}
               aria-valuemin={0}
               aria-valuemax={100}
             >
               <motion.div
-                className="h-full bg-blue-600 rounded-full"
+                className="progress-fill"
                 animate={{ width: `${progressPct}%` }}
                 transition={{ duration: 0.4 }}
               />
@@ -164,16 +165,17 @@ export default function OnboardingPage() {
             <div className="flex gap-2 mt-3 flex-wrap">
               {STEPS.map((s, i) => (
                 <div key={s.id} className="flex items-center gap-1">
-                  <div className={clsx(
-                    'w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold',
-                    i < step && 'bg-emerald-500 text-white',
-                    i === step && 'bg-blue-600 text-white',
-                    i > step && 'bg-gray-200 text-gray-500',
-                  )}>
+                  <div
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold"
+                    style={{
+                      background: i < step ? '#27a644' : i === step ? 'rgb(var(--ds-accent))' : 'rgb(var(--ds-s2))',
+                      color: i > step ? 'rgb(var(--ds-ink-s))' : '#fff',
+                    }}
+                  >
                     {i < step ? <CheckCircle className="w-3 h-3" /> : i + 1}
                   </div>
                   {i < STEPS.length - 1 && (
-                    <div className={clsx('w-4 h-px', i < step ? 'bg-emerald-400' : 'bg-gray-200')} />
+                    <div className="w-4" style={{ height: 1, background: i < step ? '#27a644' : 'rgb(var(--ds-hl))' }} />
                   )}
                 </div>
               ))}
@@ -190,8 +192,8 @@ export default function OnboardingPage() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
               >
-                <h2 className="text-xl font-bold text-gray-900 mb-1">{STEPS[step].title}</h2>
-                <p className="text-sm text-gray-500 mb-6">{STEPS[step].desc}</p>
+                <h2 className="text-xl font-bold mb-1" style={{ color: 'rgb(var(--ds-ink))' }}>{STEPS[step].title}</h2>
+                <p className="text-sm mb-6" style={{ color: 'rgb(var(--ds-ink-s))' }}>{STEPS[step].desc}</p>
 
                 {step === 0 && (
                   <div className="space-y-4">
@@ -211,7 +213,7 @@ export default function OnboardingPage() {
                     </div>
                     <div>
                       <label htmlFor="district-input" className="label">
-                        District <span className="text-gray-400 font-normal">(optional)</span>
+                        District <span className="font-normal" style={{ color: 'rgb(var(--ds-ink-3))' }}>(optional)</span>
                       </label>
                       <input
                         id="district-input"
@@ -346,12 +348,12 @@ export default function OnboardingPage() {
                         ].map(({ code, label }) => (
                           <label
                             key={code}
-                            className={clsx(
-                              'flex items-center gap-2 px-4 py-2.5 rounded-lg border cursor-pointer text-sm transition-colors',
-                              data.preferred_language === code
-                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                : 'border-gray-200 hover:border-gray-300',
-                            )}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer text-sm transition-colors"
+                            style={{
+                              border: `1px solid ${data.preferred_language === code ? 'rgb(var(--ds-accent))' : 'rgb(var(--ds-hl))'}`,
+                              background: data.preferred_language === code ? 'rgba(94,106,210,0.08)' : 'transparent',
+                              color: data.preferred_language === code ? 'rgb(var(--ds-accent))' : 'rgb(var(--ds-ink-m))',
+                            }}
                           >
                             <input
                               type="radio"
@@ -366,9 +368,9 @@ export default function OnboardingPage() {
                         ))}
                       </div>
                     </div>
-                    <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-                      <p className="text-sm font-semibold text-emerald-800 mb-1">You're all set!</p>
-                      <p className="text-xs text-emerald-700">
+                    <div className="p-4 rounded-xl" style={{ background: 'rgba(39,166,68,0.08)', border: '1px solid rgba(39,166,68,0.20)' }}>
+                      <p className="text-sm font-semibold mb-1" style={{ color: '#27a644' }}>You're all set!</p>
+                      <p className="text-xs" style={{ color: 'rgb(var(--ds-ink-m))' }}>
                         We'll use your profile to find the most relevant government schemes for you.
                         You can update this anytime in Settings.
                       </p>
@@ -377,7 +379,7 @@ export default function OnboardingPage() {
                 )}
 
                 {error && (
-                  <div role="alert" className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                  <div role="alert" className="mt-4 p-3 rounded-lg text-sm" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)', color: '#f87171' }}>
                     {error}
                   </div>
                 )}

@@ -84,15 +84,13 @@ export function DocumentUploader({ onUploadComplete, schemeId, category, classNa
           onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
-          className={clsx(
-            'border-2 border-dashed rounded-xl p-8 flex flex-col items-center gap-3 cursor-pointer transition-colors',
-            dragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50',
-          )}
+          className="drop-zone p-8 flex flex-col items-center gap-3 cursor-pointer"
+          style={dragOver ? { borderColor: 'rgb(var(--ds-accent))', background: 'rgba(94,106,210,0.04)' } : {}}
         >
-          <Upload className="w-8 h-8 text-gray-400" aria-hidden="true" />
+          <Upload className="w-8 h-8" style={{ color: 'rgb(var(--ds-ink-s))' }} aria-hidden="true" />
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-700">Click or drag a file here</p>
-            <p className="text-xs text-gray-500 mt-1">PDF, JPG, PNG — max 10 MB</p>
+            <p className="text-sm font-medium" style={{ color: 'rgb(var(--ds-ink-m))' }}>Click or drag a file here</p>
+            <p className="text-xs mt-1" style={{ color: 'rgb(var(--ds-ink-s))' }}>PDF, JPG, PNG — max 10 MB</p>
           </div>
         </div>
       )}
@@ -108,20 +106,20 @@ export function DocumentUploader({ onUploadComplete, schemeId, category, classNa
 
       {/* File selected */}
       {file && !result && (
-        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: 'rgb(var(--ds-s1))', border: '1px solid rgb(var(--ds-hl))' }}>
           {file.type.startsWith('image/') ? (
-            <Image className="w-8 h-8 text-blue-500 flex-shrink-0" aria-hidden="true" />
+            <Image className="w-8 h-8 flex-shrink-0" style={{ color: 'rgb(var(--ds-accent))' }} aria-hidden="true" />
           ) : (
-            <File className="w-8 h-8 text-blue-500 flex-shrink-0" aria-hidden="true" />
+            <File className="w-8 h-8 flex-shrink-0" style={{ color: 'rgb(var(--ds-accent))' }} aria-hidden="true" />
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-800 truncate">{file.name}</p>
-            <p className="text-xs text-gray-500">{formatSize(file.size)}</p>
+            <p className="text-sm font-medium truncate" style={{ color: 'rgb(var(--ds-ink))' }}>{file.name}</p>
+            <p className="text-xs" style={{ color: 'rgb(var(--ds-ink-s))' }}>{formatSize(file.size)}</p>
             {uploading && (
               <div className="mt-1.5">
-                <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div className="progress-track">
                   <div
-                    className="h-full bg-blue-500 transition-all duration-200"
+                    className="progress-fill"
                     style={{ width: `${progress}%` }}
                     role="progressbar"
                     aria-valuenow={progress}
@@ -135,7 +133,10 @@ export function DocumentUploader({ onUploadComplete, schemeId, category, classNa
           {!uploading && (
             <button
               onClick={() => { setFile(null); setError(null) }}
-              className="p-1 text-gray-400 hover:text-gray-600"
+              className="p-1 transition-colors"
+              style={{ color: 'rgb(var(--ds-ink-s))' }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = 'rgb(var(--ds-ink))' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'rgb(var(--ds-ink-s))' }}
               aria-label="Remove file"
             >
               <X className="w-4 h-4" />
@@ -153,7 +154,7 @@ export function DocumentUploader({ onUploadComplete, schemeId, category, classNa
       )}
 
       {uploading && (
-        <div className="flex items-center justify-center gap-2 py-2 text-sm text-gray-500">
+        <div className="flex items-center justify-center gap-2 py-2 text-sm" style={{ color: 'rgb(var(--ds-ink-s))' }}>
           <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
           Uploading... {progress}%
         </div>
@@ -161,18 +162,19 @@ export function DocumentUploader({ onUploadComplete, schemeId, category, classNa
 
       {/* Result */}
       {result && (
-        <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-2">
+        <div className="p-4 rounded-lg space-y-2" style={{ background: 'rgb(var(--ds-s1))', border: '1px solid rgb(var(--ds-hl))' }}>
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-500" aria-hidden="true" />
-            <span className="text-sm font-semibold text-gray-900">Upload successful</span>
+            <CheckCircle2 className="w-5 h-5" style={{ color: '#27a644' }} aria-hidden="true" />
+            <span className="text-sm font-semibold" style={{ color: 'rgb(var(--ds-ink))' }}>Upload successful</span>
             <VerificationBadge status={result.verified_against_requirement} />
           </div>
           {result.ai_explanation && (
-            <p className="text-xs text-gray-600">{result.ai_explanation}</p>
+            <p className="text-xs" style={{ color: 'rgb(var(--ds-ink-m))' }}>{result.ai_explanation}</p>
           )}
           <button
             onClick={() => { setFile(null); setResult(null) }}
-            className="text-xs text-blue-600 hover:underline"
+            className="text-xs transition-opacity hover:opacity-70"
+            style={{ color: 'rgb(var(--ds-accent))' }}
           >
             Upload another
           </button>
@@ -181,9 +183,9 @@ export function DocumentUploader({ onUploadComplete, schemeId, category, classNa
 
       {/* Error */}
       {error && (
-        <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg" role="alert">
-          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-xs text-red-700">{error}</p>
+        <div className="flex items-start gap-2 p-3 rounded-lg" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)' }} role="alert">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#f87171' }} aria-hidden="true" />
+          <p className="text-xs" style={{ color: '#f87171' }}>{error}</p>
         </div>
       )}
     </div>
@@ -192,11 +194,11 @@ export function DocumentUploader({ onUploadComplete, schemeId, category, classNa
 
 function VerificationBadge({ status }) {
   const map = {
-    VERIFIED: { label: 'Verified', color: 'bg-emerald-100 text-emerald-800' },
-    MISMATCH: { label: 'Mismatch', color: 'bg-red-100 text-red-700' },
-    UNREADABLE: { label: 'Unreadable', color: 'bg-gray-100 text-gray-600' },
-    PENDING: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
+    VERIFIED:   { label: 'Verified',   cls: 'badge-emerald' },
+    MISMATCH:   { label: 'Mismatch',   cls: 'badge-red' },
+    UNREADABLE: { label: 'Unreadable', cls: 'badge-indigo' },
+    PENDING:    { label: 'Pending',    cls: 'badge-amber' },
   }
   const style = map[status] || map.PENDING
-  return <span className={clsx('badge text-xs', style.color)}>{style.label}</span>
+  return <span className={clsx('badge text-xs', style.cls)}>{style.label}</span>
 }

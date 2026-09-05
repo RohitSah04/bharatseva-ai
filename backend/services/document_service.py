@@ -11,6 +11,8 @@ from app.extensions import db
 from models.document import Document
 from models.agent_log import AgentLog
 import ai.ai_service as ai_svc
+from ai.ocr_service import extract_text_from_file
+from middleware.logging_middleware import get_logger
 
 
 def _now() -> str:
@@ -25,6 +27,8 @@ def save_document(
     category: str | None = None,
     scheme_id: str | None = None,
 ) -> dict:
+    logger = get_logger()
+
     upload_dir = current_app.config.get("UPLOAD_FOLDER", "./data/uploads")
     os.makedirs(upload_dir, exist_ok=True)
 
@@ -34,25 +38,49 @@ def save_document(
     file_storage.save(file_path)
     file_size = os.path.getsize(file_path)
 
-    # Attempt basic text extraction (real OCR via Granite in Prompt 4)
-    extracted_text = ""
-    if mime_type == "application/pdf":
-        extracted_text = "[PDF content — text extraction requires Granite OCR in Phase 2]"
-    else:
-        extracted_text = "[Image content — OCR requires Granite vision in Phase 2]"
+    # ── Real text extraction via OCR pipeline ──────────────────────────────
+    file_storage.seek(0)
+    file_bytes = file_storage.read()
 
-    # Call AI explanation (MOCK for now)
-    ai_result = ai_svc.explain_document(extracted_text)
+    extracted_text, method_used = extract_text_from_file(
+        file_bytes=file_bytes,
+        mime_type=mime_type,
+        filename=filename,
+    )
+
+    logger.info(
+        "Document text extraction complete",
+        extra={
+            "event": "document_ocr",
+            "doc_filename": filename,        # 'filename' is reserved by Python logging
+            "mime_type": mime_type,
+            "method": method_used,
+            "chars_extracted": len(extracted_text),
+        },
+    )
+
+    # ── AI Verification Agent ──────────────────────────────────────────────
+    ai_result = ai_svc.explain_document(
+        extracted_text=extracted_text,
+        filename=filename,
+        mime_type=mime_type,
+    )
 
     request_id = getattr(g, "request_id", "")
     log = AgentLog(
         request_id=request_id,
         agent_name=ai_result["agent_name"],
-        input_json=json.dumps({"user_id": user_id, "filename": filename, "category": category}),
+        input_json=json.dumps({
+            "user_id": user_id,
+            "filename": filename,
+            "category": category,
+            "ocr_method": method_used,
+            "extracted_chars": len(extracted_text),
+        }),
         output_json=json.dumps(ai_result, default=str),
         confidence=ai_result["confidence"],
         latency_ms=ai_result["latency_ms"],
-        fallback_used=0,
+        fallback_used=int(ai_result.get("fallback_used", False)),
         user_id=user_id,
     )
     db.session.add(log)
@@ -65,15 +93,25 @@ def save_document(
         file_path=file_path,
         mime_type=mime_type,
         file_size_bytes=file_size,
+        # Prefer explicit category, then AI-detected type
         category=category or ai_result.get("document_type"),
-        extracted_text=extracted_text,
+        extracted_text=extracted_text[:8000] if extracted_text else "",
         ai_explanation=ai_result["ai_explanation"],
         verified_against_requirement=ai_result["verified_against_requirement"],
         agent_log_id=log.id,
     )
     db.session.add(doc)
     db.session.commit()
-    return doc.to_dict()
+
+    result = doc.to_dict()
+    # Attach AI metadata to the response (frontend already handles these fields)
+    result["document_type"]   = ai_result.get("document_type")
+    result["confidence"]      = ai_result.get("confidence")
+    result["reasoning"]       = ai_result.get("reasoning")
+    result["missing_info"]    = ai_result.get("missing_info", [])
+    result["fallback_used"]   = ai_result.get("fallback_used", False)
+    result["ocr_method"]      = method_used
+    return result
 
 
 def get_documents(user_id: str, category: str | None = None, scheme_id: str | None = None) -> list[dict]:

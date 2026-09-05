@@ -35,18 +35,28 @@ export default function ChatPage() {
   }
 
   useEffect(() => {
+    // Safe parser: handles null, arrays, objects, valid JSON strings, and invalid JSON
+    const parseSources = (raw) => {
+      if (!raw) return []
+      if (Array.isArray(raw)) return raw
+      if (typeof raw === 'object') return [raw]
+      if (typeof raw === 'string') {
+        try { return JSON.parse(raw) } catch { return [] }
+      }
+      return []
+    }
+
     // Load chat history
     chatService.getHistory({ page: 1, per_page: 50 })
       .then((res) => {
         const hist = res.data?.history || []
-        // Map to message format
         setMessages(hist.map((h) => ({
           id: h.id,
           role: h.role,
           message: h.message,
           reply: undefined,
           confidence: h.confidence_score,
-          sources: Array.isArray(h.sources) ? h.sources : (h.sources ? JSON.parse(h.sources) : []),
+          sources: parseSources(h.sources),
           agent_used: h.agent_used,
           fallback_used: h.fallback_used,
           created_at: h.created_at,
@@ -112,14 +122,17 @@ export default function ChatPage() {
   return (
     <div className="max-w-4xl mx-auto h-[calc(100vh-3.5rem)] flex flex-col">
       {/* Header */}
-      <div className="px-4 sm:px-6 py-4 border-b border-gray-200 bg-white flex items-center justify-between flex-shrink-0">
+      <div
+        className="px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0"
+        style={{ borderBottom: '1px solid rgb(var(--ds-hl))', background: 'rgb(var(--ds-canvas))' }}
+      >
         <div>
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-blue-600" aria-hidden="true" />
-            <h1 className="font-bold text-gray-900">AI Chat</h1>
-            <span className="badge bg-blue-100 text-blue-700 text-xs">IBM Granite</span>
+            <MessageSquare className="w-5 h-5" style={{ color: 'rgb(var(--ds-accent))' }} aria-hidden="true" />
+            <h1 className="font-bold" style={{ color: 'rgb(var(--ds-ink))' }}>AI Chat</h1>
+            <span className="badge badge-indigo text-xs">IBM Granite</span>
           </div>
-          <p className="text-xs text-gray-500 mt-0.5">Ask anything about government schemes</p>
+          <p className="text-xs mt-0.5" style={{ color: 'rgb(var(--ds-ink-s))' }}>Ask anything about government schemes</p>
         </div>
         {messages.length > 0 && (
           <button onClick={clearChat} className="btn-ghost text-xs" aria-label="Clear chat history">
@@ -145,15 +158,19 @@ export default function ChatPage() {
       >
         {loadingHistory ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-blue-600" aria-label="Loading chat history" />
+            <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'rgb(var(--ds-accent))' }} aria-label="Loading chat history" />
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4" aria-hidden="true">
-              <MessageSquare className="w-8 h-8 text-blue-600" />
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+              style={{ background: 'rgba(94,106,210,0.10)' }}
+              aria-hidden="true"
+            >
+              <MessageSquare className="w-8 h-8" style={{ color: 'rgb(var(--ds-accent))' }} />
             </div>
-            <h2 className="font-semibold text-gray-900 mb-2">Start a conversation</h2>
-            <p className="text-sm text-gray-500 mb-6 max-w-sm">
+            <h2 className="font-semibold mb-2" style={{ color: 'rgb(var(--ds-ink))' }}>Start a conversation</h2>
+            <p className="text-sm mb-6 max-w-sm" style={{ color: 'rgb(var(--ds-ink-s))' }}>
               Ask me about any government scheme, check eligibility, or get guidance on your application.
             </p>
             <div className="flex flex-wrap gap-2 justify-center max-w-md">
@@ -161,7 +178,14 @@ export default function ChatPage() {
                 <button
                   key={s}
                   onClick={() => setInput(s)}
-                  className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-blue-50 hover:text-blue-700 text-gray-700 rounded-full transition-colors"
+                  className="text-xs px-3 py-1.5 rounded-full transition-colors"
+                  style={{
+                    background: 'rgb(var(--ds-s1))',
+                    color: 'rgb(var(--ds-ink-m))',
+                    border: '1px solid rgb(var(--ds-hl))',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgb(var(--ds-accent))'; e.currentTarget.style.color = 'rgb(var(--ds-accent))' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgb(var(--ds-hl))'; e.currentTarget.style.color = 'rgb(var(--ds-ink-m))' }}
                 >
                   {s}
                 </button>
@@ -183,13 +207,20 @@ export default function ChatPage() {
 
         {loading && (
           <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0" aria-hidden="true">
-              <Loader2 className="w-4 h-4 text-white animate-spin" />
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgb(var(--ds-s3))', border: '1px solid rgb(var(--ds-hl-s))' }}
+              aria-hidden="true"
+            >
+              <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'rgb(var(--ds-accent))' }} />
             </div>
-            <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+            <div
+              className="rounded-2xl rounded-tl-sm px-4 py-3"
+              style={{ background: 'rgb(var(--ds-s1))', border: '1px solid rgb(var(--ds-hl))' }}
+            >
               <div className="flex gap-1" aria-label="AI is typing">
                 {[0, 1, 2].map((i) => (
-                  <span key={i} className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} aria-hidden="true" />
+                  <span key={i} className="w-2 h-2 rounded-full animate-bounce" style={{ background: 'rgb(var(--ds-ink-s))', animationDelay: `${i * 0.15}s` }} aria-hidden="true" />
                 ))}
               </div>
             </div>
@@ -197,7 +228,7 @@ export default function ChatPage() {
         )}
 
         {error && (
-          <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+          <div role="alert" className="p-3 rounded-xl text-sm" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)', color: '#f87171' }}>
             {error}
           </div>
         )}
@@ -206,7 +237,10 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="flex-shrink-0 px-4 sm:px-6 py-3 border-t border-gray-200 bg-white">
+      <div
+        className="flex-shrink-0 px-4 sm:px-6 py-3"
+        style={{ borderTop: '1px solid rgb(var(--ds-hl))', background: 'rgb(var(--ds-canvas))' }}
+      >
         <div className="flex items-end gap-3">
           <label htmlFor="chat-input" className="sr-only">Type your message</label>
           <textarea
@@ -234,7 +268,7 @@ export default function ChatPage() {
             <Send className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
-        <p className="text-xs text-gray-400 mt-1.5">
+        <p className="text-xs mt-1.5" style={{ color: 'rgb(var(--ds-ink-3))' }}>
           Powered by IBM watsonx.ai Granite · Responses may not be fully accurate — verify with official sources.
         </p>
       </div>

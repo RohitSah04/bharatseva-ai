@@ -4,9 +4,11 @@ import { authService } from '@/services/authService'
 import { profileService } from '@/services/profileService'
 import { useAuthStore } from '@/store/authStore'
 import { useProfileStore } from '@/store/profileStore'
+import { useSavedSchemeStore } from '@/store/savedSchemeStore'
 
 export function useAuth() {
   const { isAuthenticated, user, login, logout: storeLogout, refreshToken } = useAuthStore()
+
   const { setProfile, clearProfile } = useProfileStore()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
@@ -72,6 +74,7 @@ export function useAuth() {
     } finally {
       storeLogout()
       clearProfile()
+      useSavedSchemeStore.getState().clearSavedSchemes()
       navigate('/login')
     }
   }, [refreshToken, storeLogout, navigate, clearProfile])

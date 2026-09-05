@@ -21,10 +21,11 @@ export function useNotifications() {
   }, [isAuthenticated, setNotifications, setLoading])
 
   useEffect(() => {
+    if (!isAuthenticated) return   // don't poll when logged out
     fetchNotifications()
     const interval = setInterval(() => fetchNotifications(), 60000)
     return () => clearInterval(interval)
-  }, [fetchNotifications])
+  }, [fetchNotifications, isAuthenticated])
 
   const markRead = useCallback(async (id) => {
     try {

@@ -19,9 +19,9 @@ import { EligibilityBadge } from '@/components/SchemeCard'
 import clsx from 'clsx'
 
 const VERDICT_STYLES = {
-  ELIGIBLE: 'bg-emerald-50 border-emerald-200 text-emerald-800',
-  NOT_ELIGIBLE: 'bg-red-50 border-red-200 text-red-800',
-  PARTIALLY_ELIGIBLE: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+  ELIGIBLE:            { bg: 'rgba(39,166,68,0.06)',  border: 'rgba(39,166,68,0.20)' },
+  NOT_ELIGIBLE:        { bg: 'rgba(239,68,68,0.06)',  border: 'rgba(239,68,68,0.20)' },
+  PARTIALLY_ELIGIBLE:  { bg: 'rgba(217,119,6,0.06)',  border: 'rgba(217,119,6,0.20)' },
 }
 
 export default function SchemeDetailPage() {
@@ -79,7 +79,10 @@ export default function SchemeDetailPage() {
       {/* Breadcrumb */}
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+        className="flex items-center gap-1.5 text-sm transition-colors"
+        style={{ color: 'rgb(var(--ds-ink-s))' }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = 'rgb(var(--ds-ink))' }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = 'rgb(var(--ds-ink-s))' }}
         aria-label="Go back"
       >
         <ArrowLeft className="w-4 h-4" aria-hidden="true" />
@@ -91,29 +94,32 @@ export default function SchemeDetailPage() {
         <div className="flex items-start gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-2">
-              <span className="badge bg-blue-100 text-blue-800">
+              <span className="badge badge-indigo">
                 {scheme.category?.replace(/_/g, ' ')}
               </span>
               {scheme.state_or_all_india && (
-                <span className="flex items-center gap-1 text-xs text-gray-500">
+                <span className="flex items-center gap-1 text-xs" style={{ color: 'rgb(var(--ds-ink-s))' }}>
                   <MapPin className="w-3 h-3" aria-hidden="true" />
                   {scheme.state_or_all_india === 'all_india' ? 'All India' : scheme.state_or_all_india}
                 </span>
               )}
               {scheme.source_name && (
-                <span className="text-xs text-gray-400">Source: {scheme.source_name}</span>
+                <span className="text-xs" style={{ color: 'rgb(var(--ds-ink-3))' }}>Source: {scheme.source_name}</span>
               )}
             </div>
-            <h1 className="text-xl font-bold text-gray-900 mb-2">{scheme.name}</h1>
-            <p className="text-sm text-gray-600 leading-relaxed">{scheme.description}</p>
+            <h1 className="text-xl font-bold mb-2" style={{ color: 'rgb(var(--ds-ink))' }}>{scheme.name}</h1>
+            <p className="text-sm leading-relaxed" style={{ color: 'rgb(var(--ds-ink-m))' }}>{scheme.description}</p>
           </div>
           <button
             onClick={handleSave}
             disabled={savePending}
             className={clsx(
               'flex-shrink-0 p-2 rounded-xl transition-colors',
-              saved ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500 hover:bg-blue-100 hover:text-blue-600',
             )}
+            style={{
+              background: saved ? 'rgba(94,106,210,0.10)' : 'rgb(var(--ds-s2))',
+              color: saved ? 'rgb(var(--ds-accent))' : 'rgb(var(--ds-ink-s))',
+            }}
             aria-label={saved ? 'Remove from saved schemes' : 'Save this scheme'}
             aria-pressed={saved}
           >
@@ -122,16 +128,13 @@ export default function SchemeDetailPage() {
         </div>
 
         {/* Meta info */}
-        <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 pt-4 border-t border-gray-100">
+        <div className="mt-4 flex flex-wrap gap-4 text-sm pt-4" style={{ borderTop: '1px solid rgb(var(--ds-hl))', color: 'rgb(var(--ds-ink-m))' }}>
           {scheme.deadline && (
             <div className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-gray-400" aria-hidden="true" />
+              <Calendar className="w-4 h-4" style={{ color: 'rgb(var(--ds-ink-s))' }} aria-hidden="true" />
               <span>Deadline: {new Date(scheme.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
               {daysLeft != null && daysLeft > 0 && (
-                <span className={clsx(
-                  'badge text-xs ml-1',
-                  daysLeft <= 7 ? 'bg-red-100 text-red-700' : daysLeft <= 30 ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600',
-                )}>
+                <span className={`badge text-xs ml-1 ${daysLeft <= 7 ? 'badge-red' : daysLeft <= 30 ? 'badge-amber' : 'badge-indigo'}`}>
                   {daysLeft}d left
                 </span>
               )}
@@ -139,7 +142,7 @@ export default function SchemeDetailPage() {
           )}
           {scheme.office_contact && (
             <div className="flex items-center gap-1.5">
-              <Phone className="w-4 h-4 text-gray-400" aria-hidden="true" />
+              <Phone className="w-4 h-4" style={{ color: 'rgb(var(--ds-ink-s))' }} aria-hidden="true" />
               <span>{scheme.office_contact}</span>
             </div>
           )}
@@ -172,9 +175,9 @@ export default function SchemeDetailPage() {
 
       {/* Eligibility result */}
       {eligError && (
-        <div role="alert" className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700">{eligError}</p>
+        <div role="alert" className="p-4 rounded-xl flex items-start gap-2" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)' }}>
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#f87171' }} />
+          <p className="text-sm" style={{ color: '#f87171' }}>{eligError}</p>
         </div>
       )}
 
@@ -182,7 +185,11 @@ export default function SchemeDetailPage() {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className={clsx('card p-5 border', VERDICT_STYLES[eligResult.verdict] || 'border-gray-200')}
+          className="card p-5"
+          style={{
+            background: (VERDICT_STYLES[eligResult.verdict] || {}).bg || 'rgb(var(--ds-s1))',
+            border: `1px solid ${(VERDICT_STYLES[eligResult.verdict] || {}).border || 'rgb(var(--ds-hl))'}`,
+          }}
         >
           {eligResult.fallback_used && <DegradedModeBanner className="mb-3" />}
           <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -190,14 +197,14 @@ export default function SchemeDetailPage() {
               <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <EligibilityBadge verdict={eligResult.verdict} />
                 <ConfidenceBadge score={eligResult.confidence} />
-                {!eligResult.fallback_used && (
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-700 text-white leading-none">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                    IBM Granite
-                  </span>
-                )}
+              {!eligResult.fallback_used && (
+                <span className="badge-ibm">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  IBM Granite
+                </span>
+              )}
               </div>
-              <p className="text-sm text-gray-700 leading-relaxed">{eligResult.reasoning}</p>
+              <p className="text-sm leading-relaxed" style={{ color: 'rgb(var(--ds-ink-m))' }}>{eligResult.reasoning}</p>
             </div>
             <button
               onClick={() => setDrawerOpen(true)}
@@ -224,13 +231,13 @@ export default function SchemeDetailPage() {
         {requiredDocs.length > 0 && (
           <div className="card p-5">
             <h2 className="section-title mb-3">
-              <FileText className="w-4 h-4 inline text-blue-600 mr-1.5" aria-hidden="true" />
+              <FileText className="w-4 h-4 inline mr-1.5" style={{ color: 'rgb(var(--ds-accent))' }} aria-hidden="true" />
               Required Documents
             </h2>
             <ul className="space-y-2" role="list">
               {requiredDocs.map((doc, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" aria-hidden="true" />
+                <li key={i} className="flex items-center gap-2 text-sm" style={{ color: 'rgb(var(--ds-ink-m))' }}>
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: '#27a644' }} aria-hidden="true" />
                   {typeof doc === 'string' ? doc : doc.name || JSON.stringify(doc)}
                 </li>
               ))}
@@ -243,14 +250,14 @@ export default function SchemeDetailPage() {
           <div className="card p-5">
             <h2 className="section-title mb-3">Contact & Office</h2>
             {scheme.office_address && (
-              <div className="flex items-start gap-2 text-sm text-gray-600 mb-3">
-                <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <div className="flex items-start gap-2 text-sm mb-3" style={{ color: 'rgb(var(--ds-ink-m))' }}>
+                <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'rgb(var(--ds-ink-s))' }} aria-hidden="true" />
                 <span>{scheme.office_address}</span>
               </div>
             )}
             {scheme.office_contact && (
-              <div className="flex items-start gap-2 text-sm text-gray-600">
-                <Phone className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <div className="flex items-start gap-2 text-sm" style={{ color: 'rgb(var(--ds-ink-m))' }}>
+                <Phone className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'rgb(var(--ds-ink-s))' }} aria-hidden="true" />
                 <span>{scheme.office_contact}</span>
               </div>
             )}

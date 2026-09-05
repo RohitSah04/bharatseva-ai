@@ -3,31 +3,93 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Search, Cpu, FileText, ClipboardList,
   Calendar, MessageSquare, Bookmark, Bell, User, Settings,
-  LogOut, ShieldCheck, X, Zap, ChevronRight,
+  LogOut, ShieldCheck, X, ChevronRight,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useTranslation } from 'react-i18next'
 import clsx from 'clsx'
 
-const NAV_ITEMS = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/schemes', icon: Search, label: 'Schemes' },
-  { to: '/copilot', icon: Cpu, label: 'AI Copilot', highlight: true },
-  { to: '/documents', icon: FileText, label: 'Document Vault' },
-  { to: '/tracker', icon: ClipboardList, label: 'Tracker' },
-  { to: '/deadlines', icon: Calendar, label: 'Deadlines' },
-  { to: '/chat', icon: MessageSquare, label: 'AI Chat' },
-  { to: '/saved', icon: Bookmark, label: 'Saved Schemes' },
-]
+/* ── BharatSeva wordmark ───────────────────────────────────────────────────── */
+function BSLogo() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect width="24" height="24" rx="6" fill="#5e6ad2" />
+      <path
+        d="M7 7h5a3 3 0 0 1 0 6H7V7zm0 6h5.5a3.5 3.5 0 0 1 0 4H7v-4z"
+        fill="white"
+        opacity="0.9"
+      />
+    </svg>
+  )
+}
 
-const BOTTOM_ITEMS = [
-  { to: '/notifications', icon: Bell, label: 'Notifications' },
-  { to: '/profile', icon: User, label: 'Profile' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
-]
+/* ── Nav link ──────────────────────────────────────────────────────────────── */
+function SidebarLink({ to, icon: Icon, label, highlight, onClick }) {
+  return (
+    <NavLink
+      to={to}
+      onClick={onClick}
+      className={({ isActive }) =>
+        clsx(
+          'group flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13.5px] font-medium transition-all duration-150 relative',
+          isActive
+            ? 'bg-[rgb(var(--ds-s2))] text-[rgb(var(--ds-ink))]'
+            : 'text-[rgb(var(--ds-ink-s))] hover:bg-[rgb(var(--ds-s1))] hover:text-[rgb(var(--ds-ink))]',
+        )
+      }
+    >
+      {({ isActive }) => (
+        <>
+          {/* Active accent bar */}
+          {isActive && (
+            <span
+              className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-full"
+              style={{ background: 'rgb(var(--ds-accent))' }}
+              aria-hidden="true"
+            />
+          )}
+          <Icon
+            className={clsx(
+              'w-4 h-4 flex-shrink-0 transition-colors',
+              isActive ? 'text-[rgb(var(--ds-accent))]' : 'text-[rgb(var(--ds-ink-s))] group-hover:text-[rgb(var(--ds-ink-m))]',
+              highlight && !isActive && 'text-[rgb(var(--ds-accent))]',
+            )}
+            aria-hidden="true"
+          />
+          <span className="flex-1 leading-none">{label}</span>
+          {highlight && !isActive && (
+            <span className="badge-ibm text-[10px] px-1.5 py-0.5">AI</span>
+          )}
+        </>
+      )}
+    </NavLink>
+  )
+}
 
+/* ── Sidebar ────────────────────────────────────────────────────────────────── */
 export function Sidebar({ open, onClose }) {
-  const { user, logoutUser, isAuthenticated } = useAuth()
+  const { user, logoutUser } = useAuth()
+  const { t } = useTranslation()
   const isAdmin = user?.role === 'admin'
+
+  const NAV_ITEMS = [
+    { to: '/dashboard',  icon: LayoutDashboard, label: t('dashboard') },
+    { to: '/schemes',    icon: Search,          label: t('schemes') },
+    { to: '/copilot',    icon: Cpu,             label: t('copilot'), highlight: true },
+    { to: '/documents',  icon: FileText,        label: t('documents') },
+    { to: '/tracker',    icon: ClipboardList,   label: t('tracker') },
+    { to: '/deadlines',  icon: Calendar,        label: t('calendar') },
+    { to: '/chat',       icon: MessageSquare,   label: t('chat') },
+    { to: '/saved',      icon: Bookmark,        label: t('saved_schemes') },
+  ]
+
+  const BOTTOM_ITEMS = [
+    { to: '/notifications', icon: Bell,     label: t('notifications') },
+    { to: '/profile',       icon: User,     label: t('profile') },
+    { to: '/settings',      icon: Settings, label: t('settings') },
+  ]
+
+  const avatarLetter = user?.email?.[0]?.toUpperCase() || 'U'
 
   return (
     <>
@@ -38,41 +100,49 @@ export function Sidebar({ open, onClose }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 z-40 md:hidden"
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-40 md:hidden"
+            style={{ background: 'rgba(0,0,0,0.65)' }}
             onClick={onClose}
             aria-hidden="true"
           />
         )}
       </AnimatePresence>
 
-      {/* Sidebar panel
-          Mobile  : fixed, full height, slides in/out via translateX.
-          Desktop : static (participates in flex layout), flex-shrink-0 holds the w-64
-                    width so the content area cannot compress it.
-      */}
+      {/* Sidebar panel */}
       <aside
         className={clsx(
-          'fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-200 z-50 flex flex-col transition-transform duration-300',
+          'fixed left-0 top-0 bottom-0 w-56 z-50 flex flex-col transition-transform duration-250',
           'md:static md:translate-x-0 md:z-auto md:flex-shrink-0',
           open ? 'translate-x-0' : '-translate-x-full',
         )}
+        style={{
+          background: 'rgb(var(--ds-canvas))',
+          borderRight: '1px solid rgb(var(--ds-hl))',
+        }}
         aria-label="Main navigation"
         role="navigation"
       >
-        {/* Header */}
-        <div className="h-14 flex items-center justify-between px-4 border-b border-gray-200 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg gradient-brand flex items-center justify-center" aria-hidden="true">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
+        {/* Header — 56px height per DESIGN.md top-nav */}
+        <div
+          className="h-14 flex items-center justify-between px-4 flex-shrink-0"
+          style={{ borderBottom: '1px solid rgb(var(--ds-hl))' }}
+        >
+          <div className="flex items-center gap-2.5">
+            <BSLogo />
             <div>
-              <p className="text-sm font-bold text-gray-900 leading-none">BharatSeva AI</p>
-              <p className="text-xs text-gray-500 leading-none mt-0.5">Citizen Copilot</p>
+              <p className="text-[13px] font-semibold leading-none" style={{ color: 'rgb(var(--ds-ink))', letterSpacing: '-0.02em' }}>
+                BharatSeva AI
+              </p>
+              <p className="text-[11px] leading-none mt-0.5" style={{ color: 'rgb(var(--ds-ink-s))' }}>
+                Citizen Copilot
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="md:hidden p-1.5 text-gray-400 hover:text-gray-600 rounded-lg"
+            className="md:hidden p-1.5 rounded-md transition-colors"
+            style={{ color: 'rgb(var(--ds-ink-s))' }}
             aria-label="Close menu"
           >
             <X className="w-4 h-4" />
@@ -80,81 +150,75 @@ export function Sidebar({ open, onClose }) {
         </div>
 
         {/* Nav items */}
-        <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5 scrollbar-hide" aria-label="Navigation">
           {NAV_ITEMS.map((item) => (
             <SidebarLink key={item.to} {...item} onClick={onClose} />
           ))}
 
           {isAdmin && (
             <>
-              <div className="my-2 border-t border-gray-100" />
+              <div className="hairline my-2 mx-3" />
               <SidebarLink
                 to="/admin"
                 icon={ShieldCheck}
-                label="Admin Dashboard"
+                label={t('admin_dashboard')}
                 onClick={onClose}
               />
             </>
           )}
         </nav>
 
-        {/* Bottom */}
-        <div className="border-t border-gray-100 py-3 px-3 space-y-0.5">
+        {/* Bottom actions */}
+        <div
+          className="py-2 px-2 space-y-0.5"
+          style={{ borderTop: '1px solid rgb(var(--ds-hl))' }}
+        >
           {BOTTOM_ITEMS.map((item) => (
             <SidebarLink key={item.to} {...item} onClick={onClose} />
           ))}
           <button
             onClick={logoutUser}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-red-50 hover:text-red-700 transition-colors"
+            className="group w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13.5px] font-medium transition-all duration-150"
+            style={{ color: 'rgb(var(--ds-ink-s))' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(220,38,38,0.08)'
+              e.currentTarget.style.color = '#f87171'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = ''
+              e.currentTarget.style.color = 'rgb(var(--ds-ink-s))'
+            }}
             aria-label="Log out of BharatSeva AI"
           >
             <LogOut className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-            <span>Log out</span>
+            <span className="leading-none">{t('logout')}</span>
           </button>
         </div>
 
-        {/* User info */}
-        <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
-          <p className="text-xs font-medium text-gray-700 truncate">{user?.email || 'Citizen'}</p>
-          <p className="text-xs text-gray-400 capitalize">{user?.role || 'citizen'}</p>
+        {/* User footer */}
+        <div
+          className="px-3 py-3 flex items-center gap-2.5"
+          style={{ borderTop: '1px solid rgb(var(--ds-hl))', background: 'rgb(var(--ds-s1))' }}
+        >
+          {/* Avatar */}
+          <div
+            className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold text-white"
+            style={{ background: 'rgb(var(--ds-accent))' }}
+            aria-hidden="true"
+          >
+            {avatarLetter}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[12px] font-medium truncate leading-none" style={{ color: 'rgb(var(--ds-ink-m))' }}>
+              {user?.email || 'Citizen'}
+            </p>
+            <p className="text-[11px] capitalize leading-none mt-0.5" style={{ color: 'rgb(var(--ds-ink-s))' }}>
+              {user?.role || 'citizen'}
+            </p>
+          </div>
+          <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'rgb(var(--ds-ink-3))' }} aria-hidden="true" />
         </div>
       </aside>
     </>
-  )
-}
-
-function SidebarLink({ to, icon: Icon, label, highlight, onClick }) {
-  return (
-    <NavLink
-      to={to}
-      onClick={onClick}
-      className={({ isActive }) =>
-        clsx(
-          'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
-          isActive
-            ? 'bg-blue-50 text-blue-700 font-semibold'
-            : highlight
-              ? 'text-gray-700 hover:bg-blue-50 hover:text-blue-700 font-medium'
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
-        )
-      }
-    >
-      {({ isActive }) => (
-        <>
-          <Icon
-            className={clsx(
-              'w-4 h-4 flex-shrink-0',
-              isActive && 'text-blue-600',
-              highlight && !isActive && 'text-blue-500',
-            )}
-            aria-hidden="true"
-          />
-          <span className="flex-1">{label}</span>
-          {highlight && !isActive && (
-            <span className="badge bg-blue-100 text-blue-700 text-xs">AI</span>
-          )}
-        </>
-      )}
-    </NavLink>
   )
 }

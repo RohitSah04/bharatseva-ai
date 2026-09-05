@@ -31,7 +31,21 @@ export const adminService = {
   updateFeatureFlag: (flagName, enabled) =>
     apiClient.patch(`/admin/feature-flags/${flagName}`, { enabled }).then(unwrap),
 
+  // User Management
+  listUsers: (params = {}) =>
+    apiClient.get('/admin/users', { params }).then(unwrap),
+
+  getUser: (userId) =>
+    apiClient.get(`/admin/users/${userId}`).then(unwrap),
+
+  updateUserStatus: (userId, action) =>
+    apiClient.patch(`/admin/users/${userId}/status`, { action }).then(unwrap),
+
+  updateUserRole: (userId, role) =>
+    apiClient.patch(`/admin/users/${userId}/role`, { role }).then(unwrap),
+
   // Demo Reset
   demoReset: () =>
     apiClient.post('/admin/demo-reset').then(unwrap),
 }
+
